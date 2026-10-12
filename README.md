@@ -43,3 +43,7 @@ pnpm exec wrangler deploy --dry-run --config wrangler.example.jsonc
 ```
 
 源码许可与上游来源见 [LICENSE](LICENSE) 和 [NOTICE](NOTICE)。
+
+## 1.0.1 更新
+
+收到已认证接收方的分块确认时，先释放该方中继收件队列，再转发确认；与新版互传客户端保持一致，不清除另一端队列。暂存格式、过期时间和 Koofr 接口保持原行为。

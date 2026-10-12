@@ -4,3 +4,5 @@ coverage/
 wrangler.jsonc
 *.local
 .dev.vars*
+
+.codex-tmp/

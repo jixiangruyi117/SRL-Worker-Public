@@ -49,6 +49,38 @@ async function read(response) {
 }
 
 describe('Cloudflare 设备码中继', () => {
+  it('releases an acknowledged receive window on message POST before a sender refill', async () => {
+    const storage = new MemoryStorage()
+    const session = new BridgeSession({ storage })
+    const controller = await read(await session.fetch(post('/initialize', { code: 'AB12CD34' })))
+    const participant = await read(await session.fetch(post('/join', {})))
+    const chunk = { type: 'file-chunk', data: 'x'.repeat(350_000) }
+    for (let index = 0; index < 8; index++)
+      await session.enqueue('participant', { ...chunk, index })
+    const first = await session.takeQueue('participant', true)
+    // A controller cannot acknowledge the participant's inbox.
+    await session.fetch(
+      post('/messages', {
+        token: controller.controllerToken,
+        message: { type: 'ping' },
+        acknowledgements: first.deliveryIds,
+      }),
+    )
+    expect((await session.takeQueue('participant', true)).messages).toHaveLength(9)
+    const response = await session.fetch(
+      post('/messages', {
+        token: participant.participantToken,
+        message: { type: 'file-chunk-ack' },
+        acknowledgements: first.deliveryIds,
+      }),
+    )
+    expect(response.status).toBe(204)
+    for (let index = 8; index < 16; index++)
+      expect(await session.enqueue('participant', { ...chunk, index })).toBeNull()
+    expect((await session.takeQueue('participant', true)).messages).toHaveLength(9)
+    await session.acknowledgeQueue('participant', first.deliveryIds)
+    expect((await session.takeQueue('participant', true)).messages).toHaveLength(9)
+  })
   it('replays unacknowledged messages and deduplicates retried uploads even after acknowledgement', async () => {
     const storage = new MemoryStorage()
     const session = new BridgeSession({ storage })

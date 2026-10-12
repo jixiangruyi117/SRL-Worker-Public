@@ -149,6 +149,21 @@ export class BridgeSession {
     return null
   }
 
+  async acknowledgeQueue(role, acknowledgements) {
+    if (!Array.isArray(acknowledgements) || !acknowledgements.length) return
+    const ack = new Set(acknowledgements.slice(0, 1024))
+    await this.state.storage.transaction(async (storage) => {
+      const indexKey = `${this.queueKey(role)}:index`
+      const index = (await storage.get(indexKey)) ?? []
+      const remaining = []
+      for (const entry of index) {
+        if (ack.has(entry.key)) await storage.delete(entry.key)
+        else remaining.push(entry)
+      }
+      if (remaining.length !== index.length) await storage.put(indexKey, remaining)
+    })
+  }
+
   async takeQueue(role, reliable = false, acknowledgements = []) {
     return this.state.storage.transaction(async (storage) => {
       const key = this.queueKey(role)
@@ -252,6 +267,9 @@ export class BridgeSession {
     const role = await this.authenticate(session, body.token)
     if (!role) return json({ code: 'INVALID_TOKEN', message: '中继令牌无效' }, 401)
     await this.refreshActiveSession(session)
+    // Release validated deliveries before ACKs let the sender refill its window.
+    // Only this authenticated role's inbox can be acknowledged.
+    await this.acknowledgeQueue(role, body.acknowledgements)
     const problem = await this.enqueue(this.otherRole(role), body.message, body.messageId)
     if (problem) return problem
     return new Response(null, { status: 204 })
