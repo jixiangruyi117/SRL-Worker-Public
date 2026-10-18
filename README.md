@@ -21,7 +21,7 @@
 
 Cloudflare 会从仓库安装依赖并运行部署命令。首次部署会创建 `BridgeSession` Durable Object 所需的 SQLite 类。
 
-部署完成后，复制 Cloudflare 显示的 Worker HTTPS 根地址，在 SRL Public 的“设置 → 自部署 Worker”中粘贴并保存。地址保存在当前浏览器或 APK 的本机设置中。
+部署完成后，复制 Cloudflare 显示的 Worker HTTPS 根地址，在 SRL Public 网页/PWA 或 Capacitor APK 的“设置 → 中继服务”中的“自部署 Worker”粘贴并保存，再点“检查连接”；设备码中继需检测通过，酒馆端须填写相同地址。独立 Kotlin APK 在“设置 → SRL Worker 地址”填写。地址保存在当前浏览器或 APK 的本机设置中；不要填写托管网页静态资源的另一个 Worker 地址。
 
 以后在 GitHub Fork 页面点击 **Sync fork → Update branch**，Cloudflare 监听到 `main` 更新后会自动重新部署。
 
@@ -39,6 +39,7 @@ Cloudflare 会从仓库安装依赖并运行部署命令。首次部署会创建
 以下命令仅供维护者在本机开发和验证，不是部署步骤；需要 Node.js 22 或更新版本及 pnpm 11。
 
 ```powershell
+pnpm install --frozen-lockfile
 pnpm test
 pnpm exec wrangler deploy --dry-run --config wrangler.example.jsonc
 ```
