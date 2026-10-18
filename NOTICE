@@ -1,1 +1,3 @@
 WorkerBridge.js、BridgeSession.js、BridgeParcels.js 和 CloudProxyProtocol.mjs 改编自 SillyTavern Resource Library Public 中的公开实现。相关源码及其衍生部分遵循本仓库 LICENSE 中的许可条款。
+
+WorkerGitHubProxy.js 的 GitHub 备份代理与附件下载错误处理改编自 SillyTavern Resource Library 的对应实现，沿用本仓库 LICENSE 的许可条款。

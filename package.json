@@ -1,7 +1,7 @@
 {
   "name": "srl-worker-public",
   "private": false,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "packageManager": "pnpm@11.5.0",
